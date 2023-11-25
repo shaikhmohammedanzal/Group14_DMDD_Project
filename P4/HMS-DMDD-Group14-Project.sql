@@ -380,7 +380,7 @@ VALUES
     @InputRoomID INT
 AS
 BEGIN
-    SELECT P.Patient_ID, P.Patient_Name, P.Patient_Address_Encrypted, P.Patient_Phonenumber, W.Ward_Type
+    SELECT P.Patient_ID, P.Patient_Name, P.Patient_Address_Encrypted, P.Patient_Phonenumber_Encrypted, W.Ward_Type
     FROM Patient AS P
     INNER JOIN Ward AS W ON P.Room_ID = W.Room_ID
     WHERE P.Room_ID = @InputRoomID;
@@ -605,9 +605,16 @@ CREATE SYMMETRIC KEY SymmetricKey_HMS
 WITH ALGORITHM = AES_256
 ENCRYPTION BY PASSWORD = 'HMS';
 
+
 -- Alter the Patient table to encrypt columns
 ALTER TABLE Patient
 ADD Patient_Address_Encrypted VARBINARY(MAX) NULL;
+
+ALTER TABLE Patient
+ADD Patient_Phonenumber_Encrypted VARBINARY(MAX) NULL;
+
+alter table patient
+drop column Patient_Phonenumber_Encrypted
 
 -- Update existing data with encrypted values
 OPEN SYMMETRIC KEY SymmetricKey_HMS
@@ -616,9 +623,15 @@ DECRYPTION BY PASSWORD = 'HMS';
 UPDATE Patient
 SET Patient_Address_Encrypted = ENCRYPTBYKEY(KEY_GUID('SymmetricKey_HMS'), CONVERT(VARBINARY(MAX), Patient_Address));
 
+UPDATE Patient
+SET Patient_Phonenumber_Encrypted = ENCRYPTBYKEY(KEY_GUID('SymmetricKey_HMS'), CONVERT(VARBINARY(MAX), Patient_Phonenumber));
+
 -- Drop the original unencrypted columns if you want
 ALTER TABLE Patient
 DROP COLUMN Patient_Address;
+
+ALTER TABLE Patient
+DROP COLUMN Patient_Phonenumber;
 
 select * from patient
 
@@ -634,12 +647,13 @@ SELECT
     CONVERT(VARCHAR(255), DECRYPTBYKEY(Patient_Address_Encrypted)) AS Patient_Address
 FROM Patient;
 
-ALTER LOGIN [anzal] WITH DEFAULT_DATABASE=[master]
-GO
-USE [master]
-GO
-ALTER LOGIN [anzal] WITH PASSWORD=N'root'
-GO
+SELECT 
+    Patient_ID,
+    Patient_Name,
+    CONVERT(INTEGER, DECRYPTBYKEY(Patient_Phonenumber_Encrypted)) AS Patient_Phonenumber
+FROM Patient;
+
+
 
 
 
