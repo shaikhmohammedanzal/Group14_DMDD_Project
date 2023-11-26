@@ -436,6 +436,23 @@ END;
 EXEC GetDoctorAppointments @InputDoctorEmployeeID = 21, @InputStartDate = '2023-01-01', @InputEndDate = '2023-12-31';
 
 
+--Procedure 4 : GetAvailableBedsByWardType:
+--This procedure returns the count of available beds for a specific ward type.
+
+CREATE PROCEDURE GetAvailableBedsByWardType
+    @WardType VARCHAR(255)
+AS
+BEGIN
+    SELECT Ward_Type, COUNT(*) AS AvailableBeds
+    FROM Ward
+    WHERE Ward_Type = @WardType
+    GROUP BY Ward_Type;
+END;
+
+--Output:
+EXEC GetAvailableBedsByWardType 'General';
+
+
 --View 1: PatientDetailsView
 --This view provides information about patients along with their assigned rooms and diseases.
 
@@ -502,6 +519,7 @@ JOIN Ward W ON NW.Room_ID = W.Room_ID;
 
 --Output
 SELECT * FROM NurseAssignmentView;
+
 
 
 -- Create a DML trigger for notifying when a patient is admitted or discharged
@@ -598,6 +616,7 @@ CREATE NONCLUSTERED INDEX IX_Employee_Department_ID ON Employee(Department_ID);
 
 CREATE NONCLUSTERED INDEX IX_PatientDiseaseHistory_Disease_ID ON PatientDiseaseHistory(Disease_ID);
 
+CREATE NONCLUSTERED INDEX IX_Appointment_D_Employee_ID ON Appointment (D_Employee_ID);
 
 
 --Column Data Encryption (encrypting and decrypting the Patient_Address column in the Patient table)
