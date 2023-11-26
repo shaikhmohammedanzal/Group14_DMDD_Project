@@ -201,7 +201,7 @@ VALUES
   ('2023-10-10', 21, 1),
   ('2023-11-15', 22, 1);
 
-  select * from Dispensary;
+	  select * from Dispensary;
 
   CREATE TABLE Item_Type (
     Item_type_number INT IDENTITY(30,1) PRIMARY KEY,
@@ -443,8 +443,8 @@ CREATE VIEW PatientDetailsView AS
 SELECT
     P.Patient_ID,
     P.Patient_Name,
-    P.Patient_Address,
-    P.Patient_Phonenumber,
+    P.Patient_Address_Encrypted,
+    P.Patient_Phonenumber_Encrypted,
     W.Room_ID,
     W.Bed_Number,
     W.Ward_Type,
@@ -455,6 +455,8 @@ FROM
 JOIN Ward W ON P.Room_ID = W.Room_ID
 LEFT JOIN PatientDiseaseHistory PDH ON P.Patient_ID = PDH.Patient_ID
 LEFT JOIN Disease DH ON PDH.Disease_ID = DH.Disease_ID;
+
+drop view WardOccupancyView
 
 --Output
 SELECT * FROM PatientDetailsView;
@@ -470,8 +472,8 @@ SELECT
     W.Ward_Type,
     W.Floor_Number,
     P.Patient_Name,
-    P.Patient_Address,
-    P.Patient_Phonenumber
+    P.Patient_Address_Encrypted,
+    P.Patient_Phonenumber_Encrypted
 FROM
     Ward W
 LEFT JOIN Patient P ON W.Room_ID = P.Room_ID;
@@ -545,7 +547,7 @@ ADD CONSTRAINT CHK_ValidNurseFloor CHECK (Nurse_Floor > 0 AND Nurse_Floor < 6);
 
 
 
---the UDF IsValidPhoneNumberFormat takes the Employee_PhoneNumber as a parameter and returns a bit (1 or 0) indicating whether the phone number is in a valid format. 
+--the UDF-1 IsValidPhoneNumberFormat takes the Employee_PhoneNumber as a parameter and returns a bit (1 or 0) indicating whether the phone number is in a valid format. 
 --The computed column IsValidPhoneFormat is added to the Employee table, and its value is calculated based on the UDF.
 CREATE FUNCTION dbo.IsValidPhoneNumberFormat(@PhoneNumber VARCHAR(15))
 RETURNS BIT
@@ -568,7 +570,7 @@ SELECT Employee_ID, Department_ID, Employee_FirstName, Employee_LastName, Employ
 FROM Employee;
 
 
---the UDF CalculateHospitalStayDuration takes the Admission_Date and Discharge_Date as parameters and returns the duration of the hospital stay in days.
+--the UDF-2 CalculateHospitalStayDuration takes the Admission_Date and Discharge_Date as parameters and returns the duration of the hospital stay in days.
 --The computed column HospitalStayDuration is added to the PatientDiseaseHistory table, and its value is calculated based on the UDF.
 CREATE FUNCTION dbo.CalculateHospitalStayDuration(@AdmissionDate DATE, @DischargeDate DATE)
 RETURNS INT
